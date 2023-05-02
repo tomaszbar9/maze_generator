@@ -15,3 +15,5 @@ The program accepts command-line arguments:
 --slow (slow the turtle down);
 
 --close (closes the turtle window when the maze is finished).
+
+https://user-images.githubusercontent.com/121664530/221419925-5565920b-97e9-4099-a27a-7a287b05a772.mp4
