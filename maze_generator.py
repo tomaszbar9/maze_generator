@@ -107,7 +107,6 @@ for x, y in all_lines:
             points_dict[x].add(y)
         x, y = y, x
 
-
 ### Drawing Section ###
 
 all_paths = []
@@ -244,12 +243,14 @@ for node in nodes_dict:
     longests_paths.append((find_longest_lines(node), node))
 
 longests_paths.sort()
-
 # Find an edge point (choosing a shorter way from a given point).
 for starting_point in reversed(longests_paths):
     current_point = starting_point[1]
     if current_point in nodes_dict and len(nodes_dict[current_point]) > 0:
         prev = current_point
+        if len(nodes_dict[prev]) == 1:
+            instructions.append(all_paths[nodes_dict[prev][0]['path_index']])
+            continue
         edge_node = nodes_dict[prev][-2]["other_end"]
         path_index = nodes_dict[prev][-2]["path_index"]
         while edge_node in nodes_dict:
