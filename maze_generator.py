@@ -1,283 +1,336 @@
 import argparse
-import random
 from collections import namedtuple, deque
+import random
 import turtle
 
-
-parser = argparse.ArgumentParser("Creates a maze of size s (width height)")
-parser.add_argument(
-    "-s",
-    "--size",
-    help="number of cells: width, height, in the range 1 - 100 ; defaults to 40, 20",
-    type=int,
-    nargs=2,
-    choices=range(1, 101),
-    default=[40, 20],
-)
-parser.add_argument(
-    "-c",
-    "--cell",
-    help="side of one cell in pixels; defaults to 15",
-    type=int,
-    nargs=1,
-    default=[15],
-)
-parser.add_argument("--slow", help="slow the turtle down", action="store_true")
-parser.add_argument(
-    "--close", help="close the turtle window when finished", action="store_true"
-)
-args = parser.parse_args()
-
-
-WIDTH, HEIGHT = args.size
-STEP = args.cell[0]
-HOME = -(WIDTH * STEP) // 2, -(HEIGHT * STEP) // 2
-
-### The Maze Section ###
-
-Cell = namedtuple("Cell", "next prev")
-table = [[Cell(next=set(), prev=[]) for _ in range(HEIGHT)] for _ in range(WIDTH)]
+def main():
+    parser = argparse.ArgumentParser("Creates a maze of size s (width height)")
+    parser.add_argument(
+        "-s",
+        "--size",
+        help="number of cells: width, height; defaults to 40, 20",
+        type=int,
+        nargs=2,
+        default=[40, 20], 
+    )
+    parser.add_argument(
+        "-c",
+        "--cell",
+        help="side of one cell in pixels; defaults to 15",
+        type=int,
+        nargs=1,
+        default=[15],
+    )
+    parser.add_argument("--slow", help="slow the turtle down", action="store_true")
+    parser.add_argument(
+        "--close", help="close the turtle window when finished", action="store_true"
+    )
+    args = parser.parse_args()
 
 
-def check_available(address: tuple) -> list:
-    """
-    Define addresses of four adjacent cells.
-    :param tuple address: current cell's coordinates.
-    :return list: four tuples with the coordinates.
-    """
-    x, y = address
-    neighbours = [(x, y + 1), (x, y - 1), (x + 1, y), (x - 1, y)]
-    available = []
-    for w, h in neighbours:
-        if w in range(WIDTH) and h in range(HEIGHT) and not table[w][h].prev:
-            available.append((w, h))
-    return available
+    WIDTH, HEIGHT = args.size
+    STEP = args.cell[0]
+    HOME = -(WIDTH * STEP) // 2, -(HEIGHT * STEP) // 2
 
 
-all_lines = set()
-for row in range(WIDTH):
-    for col in range(HEIGHT):
-        all_lines.add(((row + 1, col), (row + 1, col + 1)))
-        all_lines.add(((row, col + 1), (row + 1, col + 1)))
-        if row == 0:
-            all_lines.add(((0, col), (0, col + 1)))
-        if col == 0:
-            all_lines.add(((row, 0), (row + 1, 0)))
+    ### The Maze Section ###
+    def create_maze(width: int, height: int) -> dict:
+        """
+        Create a maze's plan and transform it into a dictionary
+        of points that for each point of the maze defines points
+        that are connected with it by lines.   
 
-# Define each consecutive cell, by the way removing a side line from the all_lines set when the side of the cell is open.
-address = (random.randrange(WIDTH), random.randrange(HEIGHT))
-table[address[0]][address[1]].prev.append(None)
-done = False
-available = check_available(address)
-while not done:
-    while available:
-        next_field = random.choice(available)
+        :param int width: Number of horizontal fields in maze.
+        :param int height: Number of vertical fields in maze.
+        :return dict: Keys are tuples with coordinates of every point,
+            values are sets of tuples with coordinates of neighbouring points.
+        """
 
-        point_between = max(address[0], next_field[0]), max(address[1], next_field[1])
-        if address[0] == next_field[0]:
-            line_between = (point_between, (point_between[0] + 1, point_between[1]))
-        else:
-            line_between = (point_between, (point_between[0], point_between[1] + 1))
-        all_lines.remove(line_between)
+        Cell = namedtuple("Cell", "next prev")
+        table = [[Cell(next=set(), prev=[]) for _ in range(height)] for _ in range(width)]
 
-        table[next_field[0]][next_field[1]].prev.append(address)
-        table[address[0]][address[1]].next.add(next_field)
-        address = next_field
+
+        def check_available(address: tuple) -> list:
+            """
+            Define addresses of four adjacent cells.
+
+            :param tuple address: current cell's coordinates.
+            :return list: four tuples with the coordinates.
+            """
+            x, y = address
+            neighbours = [(x, y + 1), (x, y - 1), (x + 1, y), (x - 1, y)]
+            available = []
+            for w, h in neighbours:
+                if w in range(width) and h in range(height) and not table[w][h].prev:
+                    available.append((w, h))
+            return available
+
+
+        all_lines = set()
+        for row in range(width):
+            for col in range(height):
+                all_lines.add(((row + 1, col), (row + 1, col + 1)))
+                all_lines.add(((row, col + 1), (row + 1, col + 1)))
+                if row == 0:
+                    all_lines.add(((0, col), (0, col + 1)))
+                if col == 0:
+                    all_lines.add(((row, 0), (row + 1, 0)))
+
+        # Define each consecutive cell, by the way removing a side line from the all_lines set when the side of the cell is open.
+        address = (random.randrange(width), random.randrange(height))
+        table[address[0]][address[1]].prev.append(None)
+        done = False
         available = check_available(address)
+        while not done:
+            while available:
+                next_field = random.choice(available)
 
-    while not available:
-        address = table[address[0]][address[1]].prev[0]
-        if address == None:
-            done = True
-            break
-        available = check_available(address)
+                point_between = max(address[0], next_field[0]), max(address[1], next_field[1])
+                if address[0] == next_field[0]:
+                    line_between = (point_between, (point_between[0] + 1, point_between[1]))
+                else:
+                    line_between = (point_between, (point_between[0], point_between[1] + 1))
+                all_lines.remove(line_between)
 
-# Open the maze at both sides of the board.
-enter = ((0, HEIGHT // 2), (0, HEIGHT // 2 + 1))
-exit = ((WIDTH, HEIGHT // 2), (WIDTH, HEIGHT // 2 + 1))
-all_lines.remove(enter)
-all_lines.remove(exit)
+                table[next_field[0]][next_field[1]].prev.append(address)
+                table[address[0]][address[1]].next.add(next_field)
+                address = next_field
+                available = check_available(address)
 
-points_dict = {}
-for x, y in all_lines:
-    for _ in range(2):
-        if not x in points_dict:
-            points_dict[x] = {y}
-        else:
-            points_dict[x].add(y)
-        x, y = y, x
-
-### Drawing Section ###
-
-all_paths = []
-checked_singles = set()
-nodes_dict = {}
-instructions = []
-lines_disconnected = []
-
-
-def follow_the_line(node: tuple, next_point: tuple) -> tuple[int, int]:
-    """Recursively follow a line starting from a given `node` point.
-    Add to the `all_paths` list deque of points belonging to a stretch between two nodes.
-    To each node in the `nodes_dict` add as a value list of dictionaries describing parameters
-    of a single stretch in each direction.
-    :param tuple node: Coordinates of a starting point of a stretch.
-    :param tuple next_point: Coordinates of a subsequent point.
-    :return tuple: Length of the stretch; index pointing to 
-        the corresponding deque in the `all_paths` list.
-    """
-    entry_point = node
-    current_path = deque((node, next_point))
-    while len(points_dict[next_point]) == 2:
-        points_dict[next_point].remove(node)
-        node = next_point
-        next_point = points_dict[next_point].pop()
-        current_path.append(next_point)
-
-    all_paths.append(current_path)
-    current_path_index = len(all_paths) - 1
-    current_path_length = len(current_path) - 1
-    if len(points_dict[next_point]) == 1:
-        if entry_point in checked_singles:
-            nodes_dict[entry_point] = [
-                {
-                    "length": current_path_length,
-                    "path_index": current_path_index,
-                    "other_end": current_path[-1],
-                }
-            ]
-        checked_singles.add(next_point)
-    else:
-        nodes_dict[next_point] = [
-            {
-                "length": current_path_length,
-                "path_index": current_path_index,
-                "other_end": entry_point,
-            }
-        ]
-        for point in points_dict[next_point]:
-            if point != node:
-                length, idx = follow_the_line(next_point, point)
-                nodes_dict[next_point].append(
-                    {
-                        "length": length,
-                        "path_index": idx,
-                        "other_end": all_paths[idx][-1],
-                    }
-                )
-    return current_path_length, current_path_index
-
-
-def find_longest_lines(node: tuple, prev: tuple = ()) -> int:
-    """
-    Recursively find longest possible lines for a given node.
-    :param tuple node: Coordinates of a node.
-    :param tuple prev: Coordinates of a previous node
-        (for internal use of the function only), defaults to ().
-    :return int: Sum of the two longest paths from the node.
-    """
-    longest = 0
-    if node not in nodes_dict:
-        return 0
-    if len(nodes_dict[node]) == 1:
-        lines_disconnected.append(nodes_dict[node][0])
-        return nodes_dict[node][0]["length"]
-    for direction in nodes_dict[node]:
-        if direction["other_end"] == prev:
-            continue
-        this_longest = direction["length"] + find_longest_lines(
-            direction["other_end"], node
-        )
-        direction["longest"] = this_longest
-        longest = max(longest, this_longest)
-    if prev:
-        return longest
-    else:
-        current_node = nodes_dict[node]
-        current_node.sort(key=lambda x: x["longest"])
-        total = current_node[-1]["longest"] + current_node[-2]["longest"]
-        return total
-
-
-def make_instructions(node: tuple, path_index: int) -> None:
-    """Recursively add lists of coordinates of each line
-    (starting from the longest one) to `instructions` list.
-    :param tuple node: Coordinates of a node.
-    :param int path_index: Index of a deque with coordinates in
-        `all_paths` list.
-    """
-    new_list = []
-    instructions.append(new_list)
-    while True:
-        new_points_list = all_paths[path_index]
-        prev = node
-        if new_points_list[0] != prev:
-            new_points_list.reverse()
-        if new_list:
-            new_points_list.popleft()
-        new_list.extend(new_points_list)
-        if new_list[-1] not in nodes_dict:
-            break
-        node = new_list[-1]
-        node_length = len(nodes_dict[node])
-        for idx, line in enumerate(reversed(nodes_dict[node])):
-            if line["other_end"] == prev:
-                del nodes_dict[node][node_length - idx - 1]
-                break
-        line = nodes_dict[node].pop()
-        path_index = line["path_index"]
-        while nodes_dict[node]:
-            line = nodes_dict[node].pop()
-            next_path_index = line["path_index"]
-            make_instructions(node, next_path_index)
-
-
-for point in points_dict:
-    if len(points_dict[point]) == 1 and point not in checked_singles:
-        next_point = points_dict[point].pop()
-        checked_singles.add(point)
-        follow_the_line(point, next_point)
-
-longests_paths = []
-for node in nodes_dict:
-    longests_paths.append((find_longest_lines(node), node))
-
-longests_paths.sort()
-# Find an edge point (choosing a shorter way from a given point).
-for starting_point in reversed(longests_paths):
-    current_point = starting_point[1]
-    if current_point in nodes_dict and len(nodes_dict[current_point]) > 0:
-        prev = current_point
-        if len(nodes_dict[prev]) == 1:
-            instructions.append(all_paths[nodes_dict[prev][0]['path_index']])
-            continue
-        edge_node = nodes_dict[prev][-2]["other_end"]
-        path_index = nodes_dict[prev][-2]["path_index"]
-        while edge_node in nodes_dict:
-            for index in range(-1, -3, -1):
-                next_node = nodes_dict[edge_node][index]["other_end"]
-                path_index = nodes_dict[edge_node][index]["path_index"]
-                if next_node != prev:
-                    prev = edge_node
-                    edge_node = next_node
+            while not available:
+                address = table[address[0]][address[1]].prev[0]
+                if address == None:
+                    done = True
                     break
-        make_instructions(edge_node, path_index)
+                available = check_available(address)
 
-for line in lines_disconnected:
-    instructions.append(all_paths[line["path_index"]])
+        # Open the maze at both sides of the board.
+        enter = ((0, height // 2), (0, height // 2 + 1))
+        exit = ((width, height // 2), (width, height // 2 + 1))
+        all_lines.remove(enter)
+        all_lines.remove(exit)
 
-turtle.hideturtle()
-if not args.slow:
-    turtle.speed(9)
-else:
-    turtle.speed(1)
-for inst in instructions:
-    turtle.penup()
-    for x, y in inst:
-        x *= STEP
-        y *= STEP
-        turtle.setposition(x + HOME[0], y + HOME[1])
-        turtle.pendown()
+        points_dict = {}
+        for x, y in all_lines:
+            for _ in range(2):
+                if not x in points_dict:
+                    points_dict[x] = {y}
+                else:
+                    points_dict[x].add(y)
+                x, y = y, x
+        return points_dict
 
-if not args.close:
-    input("Press `enter` to close the turtle window.")
+    ### Drawing Section ###
+    def tree_maker(points: dict) -> list[deque]:
+        """
+        Create a list of deques, each deque defining
+        coordinates of consecutive points of a line.
+
+        :param dict points: Keys are tuples with coordinates of every point,
+            values are sets of tuples with coordinates of neighbouring points.
+        :return list[deque]: List to be used by the turtle module as instructions.
+        """
+
+        branch = namedtuple("Branch", "line children")
+        # class Branch(typing.NamedTuple):
+        #     line: deque
+        #     children: deque
+
+        # branch = Branch
+
+        nodes = {}
+        branches = {}
+        trunks = []
+        queue = deque()         
+
+        def reverse_branch(branch: branch) -> None:
+            """
+            Reverse both items of a branch: line and children.
+
+            :param branch branch: Namedtuple with items: 
+                'line': deque, 'children': deque.
+            """
+            branch.line.reverse()
+            branch.children.reverse()
+
+
+        def make_new_branch(point: tuple, points: dict) -> None:
+            """
+            Create new branch.
+
+            :param tuple point: Coordinates of a starting point.
+            :param dict points: Dictionary with all the points.
+            """
+            next_point = list(points[point])[0]
+            new_branch = branch(deque([point, next_point]), deque())
+            branches[point] = new_branch
+
+
+        def make_new_node(point: tuple, points: dict) -> None:
+            """
+            Create a new node in the `nodes` dictionary.
+            The node itself is a dictionary where key is the tuple
+            with coordinates of the next point in the given direction
+            and the values are None.
+
+            :param tuple point: Coordinates of a node.
+            :param dict points: Dictionary with all the points.
+            """
+            nodes[point] = dict.fromkeys(points[point])  
+
+
+        def extend_line(branch: branch, points: dict) -> None:
+            """
+            Extend the line of the given branch unitl it hits
+            an end of the line or a node.
+
+            :param branch branch: Namedtuple with items: 
+                'line': deque, 'children': deque.
+            :param dict points: Dictionary with all the points.
+            """
+            line = branch.line
+            while len(points[line[-1]]) == 2:
+                pair = points[line[-1]]
+                for point in pair:
+                    if point != line[-2]:
+                        current = point
+                line.append(current)
+
+            
+        def trim(branch: branch) -> branch:
+            """
+            Compare lengths of all the branches that grow 
+            from the node at the end of the given branch.
+            Choose the longest one and make the others its
+            children.
+
+            :param branch branch: Namedtuple with items: 
+                'line': deque, 'children': deque.
+            :return branch: Namedtuple.
+            """
+            node_coords = branch.line[0]
+            node = nodes[node_coords]
+            current_branches = [branch for branch in node.values() if branch]
+            current_branches.sort(key=lambda branch: len(branch.line), reverse=True)
+            longest_branch = current_branches[0]
+            for branch in current_branches[1:]:
+                longest_branch.children.appendleft(branch)
+            reverse_branch(longest_branch)
+            for direction, value in node.items():
+                if not value:
+                    longest_branch.line.append(direction)
+            return longest_branch
+        
+
+        def make_queue(branch: branch) -> list[deque]:
+            """
+            Make a list of instructions for the turtle.
+            First deque defines the line of the given branch,
+            then, starting from the beginning, add lines of
+            each child, children of its children, and so on.
+            Do not start a new branch before the previous is 
+            finished.
+
+            :param branch branch: One of the two longest branches
+                in the maze.
+            :return list[deque]: Deques with coordinates
+                of consecutive points.
+            """
+            intructions = deque()
+            intructions.append(branch.line)
+            branch.children.reverse()
+            stack = list(branch.children)
+            while stack:
+                subbranch = stack.pop()
+                intructions.append(subbranch.line)
+                if subbranch.children:
+                    subbranch.children.reverse()
+                    stack.extend(subbranch.children)
+            return intructions  
+        
+
+        for point in points:
+                neighbours = len(points[point])
+                if neighbours == 1:
+                    make_new_branch(point, points)
+                elif neighbours > 2:
+                    make_new_node(point, points) 
+        
+        queue.extend(branches.keys())
+
+        while queue:
+            coords = queue.pop()
+            branch = branches.get(coords)
+            if branch:
+                extend_line(branch, points)
+
+                node_coords = branch.line[-1]
+                if node_coords in branches:
+                    trunks.append(branch)
+                    del branches[node_coords]
+                    continue
+                else:
+                    node = nodes[node_coords]
+
+                reverse_branch(branch)
+                node[branch.line[1]] = branch
+
+                number_of_empty_nodes = sum(not val for val in node.values())
+
+                if number_of_empty_nodes == 1:
+                    new_branch = trim(branch)
+                    queue.appendleft(new_branch.line[0])
+
+                elif number_of_empty_nodes == 0:
+                    for branch in node.values():
+                        if branch.line[0] != node_coords:
+                            reverse_branch(branch)
+                            branch.line.popleft()
+
+                    longest_branches = sorted(nodes[node_coords].values(), key=lambda x: len(x.line), reverse=True)
+
+                    for br in longest_branches[:2]:
+                        branches.pop(br.line[-1])
+
+                    longest_branches[1].line.popleft()
+                    longest_branches[0].line.extendleft(longest_branches[1].line)
+
+                    if longest_branches[1] not in longest_branches[0].children:
+                        longest_branches[0].children.extendleft(longest_branches[1].children)
+                    else:
+                        longest_branches[0].children.remove(longest_branches[1])
+                        longest_branches[0].children.extend(longest_branches[2:])
+
+                    trunks.append(longest_branches[0])
+                    trunks.sort(key=lambda x: len(x.line), reverse=True)
+        
+
+        instructions = []
+        for trunk in trunks:
+            instructions.extend(make_queue(trunk))
+
+        return instructions
+
+    points_dict = create_maze(WIDTH, HEIGHT)
+
+    instructions = tree_maker(points_dict)
+
+    turtle.hideturtle()
+    if not args.slow:
+        turtle.speed(9)
+    else:
+        turtle.speed(1)
+    for inst in instructions:
+        turtle.penup()
+        for x, y in inst:
+            x *= STEP
+            y *= STEP
+            turtle.setposition(x + HOME[0], y + HOME[1])
+            turtle.pendown()
+
+    if not args.close:
+        input("Press `enter` to close the turtle window.")
+
+
+if __name__ == "__main__":
+    main()
