@@ -3,6 +3,7 @@ from collections import namedtuple, deque
 import random
 import turtle
 
+
 def main():
     parser = argparse.ArgumentParser("Creates a maze of size s (width height)")
     parser.add_argument(
@@ -11,7 +12,7 @@ def main():
         help="number of cells: width, height; defaults to 40, 20",
         type=int,
         nargs=2,
-        default=[40, 20], 
+        default=[40, 20],
     )
     parser.add_argument(
         "-c",
@@ -27,18 +28,16 @@ def main():
     )
     args = parser.parse_args()
 
-
     WIDTH, HEIGHT = args.size
     STEP = args.cell[0]
     HOME = -(WIDTH * STEP) // 2, -(HEIGHT * STEP) // 2
-
 
     ### The Maze Section ###
     def create_maze(width: int, height: int) -> dict:
         """
         Create a maze's plan and transform it into a dictionary
         of points that for each point of the maze defines points
-        that are connected with it by lines.   
+        that are connected with it by lines.
 
         :param int width: Number of horizontal fields in maze.
         :param int height: Number of vertical fields in maze.
@@ -47,8 +46,9 @@ def main():
         """
 
         Cell = namedtuple("Cell", "next prev")
-        table = [[Cell(next=set(), prev=[]) for _ in range(height)] for _ in range(width)]
-
+        table = [
+            [Cell(next=set(), prev=[]) for _ in range(height)] for _ in range(width)
+        ]
 
         def check_available(address: tuple) -> list:
             """
@@ -64,7 +64,6 @@ def main():
                 if w in range(width) and h in range(height) and not table[w][h].prev:
                     available.append((w, h))
             return available
-
 
         all_lines = set()
         for row in range(width):
@@ -85,11 +84,19 @@ def main():
             while available:
                 next_field = random.choice(available)
 
-                point_between = max(address[0], next_field[0]), max(address[1], next_field[1])
+                point_between = max(address[0], next_field[0]), max(
+                    address[1], next_field[1]
+                )
                 if address[0] == next_field[0]:
-                    line_between = (point_between, (point_between[0] + 1, point_between[1]))
+                    line_between = (
+                        point_between,
+                        (point_between[0] + 1, point_between[1]),
+                    )
                 else:
-                    line_between = (point_between, (point_between[0], point_between[1] + 1))
+                    line_between = (
+                        point_between,
+                        (point_between[0], point_between[1] + 1),
+                    )
                 all_lines.remove(line_between)
 
                 table[next_field[0]][next_field[1]].prev.append(address)
@@ -141,18 +148,17 @@ def main():
         nodes = {}
         branches = {}
         trunks = []
-        queue = deque()         
+        queue = deque()
 
         def reverse_branch(branch: branch) -> None:
             """
             Reverse both items of a branch: line and children.
 
-            :param branch branch: Namedtuple with items: 
+            :param branch branch: Namedtuple with items:
                 'line': deque, 'children': deque.
             """
             branch.line.reverse()
             branch.children.reverse()
-
 
         def make_new_branch(point: tuple, points: dict) -> None:
             """
@@ -165,7 +171,6 @@ def main():
             new_branch = branch(deque([point, next_point]), deque())
             branches[point] = new_branch
 
-
         def make_new_node(point: tuple, points: dict) -> None:
             """
             Create a new node in the `nodes` dictionary.
@@ -176,15 +181,14 @@ def main():
             :param tuple point: Coordinates of a node.
             :param dict points: Dictionary with all the points.
             """
-            nodes[point] = dict.fromkeys(points[point])  
-
+            nodes[point] = dict.fromkeys(points[point])
 
         def extend_line(branch: branch, points: dict) -> None:
             """
             Extend the line of the given branch unitl it hits
             an end of the line or a node.
 
-            :param branch branch: Namedtuple with items: 
+            :param branch branch: Namedtuple with items:
                 'line': deque, 'children': deque.
             :param dict points: Dictionary with all the points.
             """
@@ -196,15 +200,14 @@ def main():
                         current = point
                 line.append(current)
 
-            
         def trim(branch: branch) -> branch:
             """
-            Compare lengths of all the branches that grow 
+            Compare lengths of all the branches that grow
             from the node at the end of the given branch.
             Choose the longest one and make the others its
             children.
 
-            :param branch branch: Namedtuple with items: 
+            :param branch branch: Namedtuple with items:
                 'line': deque, 'children': deque.
             :return branch: Namedtuple.
             """
@@ -220,7 +223,6 @@ def main():
                 if not value:
                     longest_branch.line.append(direction)
             return longest_branch
-        
 
         def make_queue(branch: branch) -> list[deque]:
             """
@@ -228,7 +230,7 @@ def main():
             First deque defines the line of the given branch,
             then, starting from the beginning, add lines of
             each child, children of its children, and so on.
-            Do not start a new branch before the previous is 
+            Do not start a new branch before the previous is
             finished.
 
             :param branch branch: One of the two longest branches
@@ -246,16 +248,15 @@ def main():
                 if subbranch.children:
                     subbranch.children.reverse()
                     stack.extend(subbranch.children)
-            return intructions  
-        
+            return intructions
 
         for point in points:
-                neighbours = len(points[point])
-                if neighbours == 1:
-                    make_new_branch(point, points)
-                elif neighbours > 2:
-                    make_new_node(point, points) 
-        
+            neighbours = len(points[point])
+            if neighbours == 1:
+                make_new_branch(point, points)
+            elif neighbours > 2:
+                make_new_node(point, points)
+
         queue.extend(branches.keys())
 
         while queue:
@@ -287,7 +288,11 @@ def main():
                             reverse_branch(branch)
                             branch.line.popleft()
 
-                    longest_branches = sorted(nodes[node_coords].values(), key=lambda x: len(x.line), reverse=True)
+                    longest_branches = sorted(
+                        nodes[node_coords].values(),
+                        key=lambda x: len(x.line),
+                        reverse=True,
+                    )
 
                     for br in longest_branches[:2]:
                         branches.pop(br.line[-1])
@@ -296,14 +301,15 @@ def main():
                     longest_branches[0].line.extendleft(longest_branches[1].line)
 
                     if longest_branches[1] not in longest_branches[0].children:
-                        longest_branches[0].children.extendleft(longest_branches[1].children)
+                        longest_branches[0].children.extendleft(
+                            longest_branches[1].children
+                        )
                     else:
                         longest_branches[0].children.remove(longest_branches[1])
                         longest_branches[0].children.extend(longest_branches[2:])
 
                     trunks.append(longest_branches[0])
                     trunks.sort(key=lambda x: len(x.line), reverse=True)
-        
 
         instructions = []
         for trunk in trunks:
