@@ -137,14 +137,7 @@ def main():
             values are sets of tuples with coordinates of neighbouring points.
         :return list[deque]: List to be used by the turtle module as instructions.
         """
-
         branch = namedtuple("Branch", "line children")
-        # class Branch(typing.NamedTuple):
-        #     line: deque
-        #     children: deque
-
-        # branch = Branch
-
         nodes = {}
         branches = {}
         trunks = []
