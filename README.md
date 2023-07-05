@@ -2,7 +2,7 @@
 
 Python code generating rectangular maze with given number of rows and columns.
 
-The maze is drawn using the turtle module. The turtle first draws the longest possible line and after that all branches of the line are drawn, then the branches of each branch, and so on, gradually filling the whole maze up.
+The maze is drawn using the turtle module. The turtle first draws the longest possible line and then all the branches, gradually filling the whole maze up. The generator does not use recursion at all, so there is no size limit (at least when it comes to the program itself).
 
 The program accepts command-line arguments:
 
