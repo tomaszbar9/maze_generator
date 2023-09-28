@@ -1,33 +1,16 @@
-import argparse
 from collections import namedtuple, deque
 import random
+import sys
 import turtle
+from .args_parser import parse_args
+
+
+args = parse_args(sys.argv[1:])
+
+print(args)
 
 
 def main():
-    parser = argparse.ArgumentParser("Creates a maze of size s (width height)")
-    parser.add_argument(
-        "-s",
-        "--size",
-        help="number of cells: width, height; defaults to 40, 20",
-        type=int,
-        nargs=2,
-        default=[40, 20],
-    )
-    parser.add_argument(
-        "-c",
-        "--cell",
-        help="side of one cell in pixels; defaults to 15",
-        type=int,
-        nargs=1,
-        default=[15],
-    )
-    parser.add_argument("--slow", help="slow the turtle down", action="store_true")
-    parser.add_argument(
-        "--close", help="close the turtle window when finished", action="store_true"
-    )
-    args = parser.parse_args()
-
     WIDTH, HEIGHT = args.size
     STEP = args.cell[0]
     HOME = -(WIDTH * STEP) // 2, -(HEIGHT * STEP) // 2
@@ -207,7 +190,8 @@ def main():
             node_coords = branch.line[0]
             node = nodes[node_coords]
             current_branches = [branch for branch in node.values() if branch]
-            current_branches.sort(key=lambda branch: len(branch.line), reverse=True)
+            current_branches.sort(
+                key=lambda branch: len(branch.line), reverse=True)
             longest_branch = current_branches[0]
             for branch in current_branches[1:]:
                 longest_branch.children.appendleft(branch)
@@ -291,15 +275,18 @@ def main():
                         branches.pop(br.line[-1])
 
                     longest_branches[1].line.popleft()
-                    longest_branches[0].line.extendleft(longest_branches[1].line)
+                    longest_branches[0].line.extendleft(
+                        longest_branches[1].line)
 
                     if longest_branches[1] not in longest_branches[0].children:
                         longest_branches[0].children.extendleft(
                             longest_branches[1].children
                         )
                     else:
-                        longest_branches[0].children.remove(longest_branches[1])
-                        longest_branches[0].children.extend(longest_branches[2:])
+                        longest_branches[0].children.remove(
+                            longest_branches[1])
+                        longest_branches[0].children.extend(
+                            longest_branches[2:])
 
                     trunks.append(longest_branches[0])
                     trunks.sort(key=lambda x: len(x.line), reverse=True)
@@ -331,5 +318,5 @@ def main():
         input("Press `enter` to close the turtle window.")
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+main()
