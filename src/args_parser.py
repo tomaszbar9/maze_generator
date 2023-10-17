@@ -1,14 +1,29 @@
 import argparse
+from argparse import Namespace
+from typing import List
 
 
-def positive(value):
+def positive(value: str) -> int:
+    """
+    Type validator.
+    If given string does not represent a positive inter, raise
+    ArgumentTypeError, otherwise return porper integer.
+    :param value: string passed to argument parser.
+    :return: positive integer.
+    """
     int_value = int(value)
     if int_value <= 0:
         raise argparse.ArgumentTypeError(f"{value} is not a positive integer.")
     return int_value
 
 
-def parse_args(args):
+def parse_args(args: List[str]) -> Namespace:
+    """
+    Parse command line arguments.
+    :param args:Arguments as a list of strings.
+    :return: Namespace object with parsed values
+        as attributes.
+    """
     parser = argparse.ArgumentParser("Creates a maze of size s (width height)")
     parser.add_argument(
         "-s",

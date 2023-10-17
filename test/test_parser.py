@@ -1,5 +1,21 @@
+from argparse import ArgumentTypeError
 import pytest
 from src import args_parser
+
+
+def test_positive_validator_for_string():
+    value = args_parser.positive('13')
+    assert value == 13
+
+
+def test_positive_validator_for_int():
+    value = args_parser.positive(13)
+    assert value == 13
+
+
+def test_positive_validator_for_negative_str():
+    with pytest.raises(ArgumentTypeError):
+        args_parser.positive('-13')
 
 
 def test_parser_with_no_args():
