@@ -2,9 +2,7 @@ import pytest
 from unittest.mock import patch
 from src import MazePath
 
-
-WIDTH = 5
-HEIGHT = 6
+WIDTH, HEIGHT = 5, 6
 
 
 @patch('src.MazePath._create_path')

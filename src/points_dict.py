@@ -4,16 +4,18 @@ from .maze_path import MazePath
 
 class PointsDict:
     def __init__(self, maze_path: MazePath):
-        """Initialize an instance.
+        """ Initialize an instance.
         :param maze_path: MazePath object.
         """
         self._fields = maze_path.fields
         self._width = maze_path.width
         self._height = maze_path.height
-        self.lines = self.get_all_lines() - self.get_open_lines()
+        self.lines = (self.get_all_lines() -
+                      self.get_open_lines() -
+                      self.get_exits_lines())
 
     def get_all_lines(self) -> set[tuple[tuple[int, int], tuple[int, int]]]:
-        """Create a set of tuples with coordinates of every line in
+        """ Create a set of tuples with coordinates of every line in
         the maze's grid.
         :return: set of tuples.
         """
@@ -29,7 +31,7 @@ class PointsDict:
         return all_lines
 
     def get_open_lines(self) -> set[tuple[tuple[int, int], tuple[int, int]]]:
-        """Create a set of tuples with coordinates of every line that should
+        """ Create a set of tuples with coordinates of every line that should
         be removed from the maze's grid.
         :return: set of tuples.
         """
@@ -47,8 +49,20 @@ class PointsDict:
                 open_lines.add((point_1, point_2))
         return open_lines
 
+    def get_exits_lines(self) -> set[tuple[tuple[int, int], tuple[int, int]]]:
+        """ Create a set of tuples with coordinates of two lines that should
+        be removed in order to open the maze on both sides. Exits will be
+        placed in the centers of the vertical borders.
+        :return: set of tuples.
+        """
+        exits = set()
+        middle = self._height // 2
+        for side in (0, self._width):
+            exits.add(((middle, side), (middle + 1, side)))
+        return exits
+
     def get_points_dict(self) -> dict:
-        """Transform given pairs into a dictionary where keys are tuples
+        """ Transform given pairs into a dictionary where keys are tuples
         with coordinates of points and values are sets containing coordinates
         of points that are connected with their keys by lines.
         :return: dictionary of points and their neighbours.

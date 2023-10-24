@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import patch
 from src import MazePath, PointsDict
 
 
@@ -35,6 +34,17 @@ def test_get_open_lines():
         ((3, 0), (3, 1)), ((2, 1), (3, 1)), ((2, 2), (2, 3)),
         ((3, 2), (4, 2)), ((3, 2), (3, 3)),
     }
+
+
+@pytest.mark.parametrize("size, exits",
+                         [((10, 5), {((2, 0), (3, 0)), ((2, 10), (3, 10))}),
+                          ((10, 6), {((3, 0), (4, 0)), ((3, 10), (4, 10))}),
+                          ((1, 1), {((0, 0), (1, 0)), ((0, 1), (1, 1))})])
+def test_get_exits(size, exits):
+    maze = MazePath(10, 10)
+    pd = PointsDict(maze)
+    pd._width, pd._height = size
+    assert pd.get_exits_lines() == exits
 
 
 def test_get_points_dict():

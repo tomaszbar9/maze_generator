@@ -4,8 +4,7 @@ from typing import List
 
 
 def positive(value: str) -> int:
-    """
-    Type validator.
+    """ Type validator.
     If given string does not represent a positive inter, raise
     ArgumentTypeError, otherwise return porper integer.
     :param value: string passed to argument parser.
@@ -18,8 +17,7 @@ def positive(value: str) -> int:
 
 
 def parse_args(args: List[str]) -> Namespace:
-    """
-    Parse command line arguments.
+    """ Parse command line arguments.
     :param args:Arguments as a list of strings.
     :return: Namespace object with parsed values
         as attributes.

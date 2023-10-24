@@ -3,7 +3,7 @@ from collections.abc import Generator
 
 
 class MazePath:
-    """Class containing tools to create a maze's schema represented
+    """ Class containing tools to create a maze's schema represented
     in `fields` attribute as two nested lists.
     """
 
@@ -23,7 +23,7 @@ class MazePath:
         self._create_path()
 
     def _set_starting_field(self) -> None:
-        """Choose randomly a field from all available fields
+        """ Choose randomly a field from all available fields
         and set its value (representing a previous field) to None.
         """
         i, j = random.randrange(self.height), random.randrange(self.width)
@@ -31,7 +31,7 @@ class MazePath:
         self._current = i, j
 
     def _get_available(self) -> list[tuple[int, int]]:
-        """Get coordinates of fields available to the current_field.
+        """ Get coordinates of fields available to the current_field.
         :return: list of coordinates.
         """
         x, y = self._current
@@ -45,7 +45,7 @@ class MazePath:
         return available
 
     def _create_path(self) -> None:
-        """Create a path by calling either _step_forward or _step_back function,
+        """ Create a path by calling either _step_forward or _step_back function,
         depending on currently available fields. Repeat those steps until
         the path reaches the starting field again.
         """
@@ -59,7 +59,7 @@ class MazePath:
                     self._step_back()
 
     def _step_forward(self, available: list[tuple[int, int]]) -> None:
-        """Choose randomly one of the available fields as the next field;
+        """ Choose randomly one of the available fields as the next field;
         in the `fields` table, assign to the next field the current
         field's coordinates; replace self._current's value with
         the chosen tuple.
@@ -70,7 +70,7 @@ class MazePath:
         self._current = i, j
 
     def _step_back(self) -> None:
-        """Look up the coordinates of the previous field in the fields
+        """ Look up the coordinates of the previous field in the fields
         table and assign the found tuple to self._current attribute.
         """
         i, j = self._current
@@ -79,7 +79,7 @@ class MazePath:
 
     def get_pairs(self) -> Generator[tuple[tuple[int, int], tuple[int, int]],
                                      None, None]:
-        """Transform table `fields' into generator of pairs
+        """ Transform table `fields' into generator of pairs
         containing coordinates of neighbouring fields.
         :return: Generator of pairs of coordinates.
         """
